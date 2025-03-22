@@ -19,6 +19,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [query, setQuery] = useState("");
   const [models, setModels] = useState<string[]>([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [availableModels, setAvailableModels] = useState<Model[]>([
     {
       value: "google:gemini-2.0-pro-exp-02-05",
@@ -74,6 +75,10 @@ function Home() {
     fetchModels();
   }, []);
 
+  const handleSubmit = () => {
+    setHasSubmitted(true);
+  };
+
   return (
     <div className="p-2">
       <SignedIn>
@@ -92,6 +97,7 @@ function Home() {
                 <Button
                   variant="ghost"
                   className="rounded-lg border bg-card text-card-foreground shadow-sm p-5 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                  onClick={handleSubmit}
                 >
                   Submit
                 </Button>
@@ -122,21 +128,20 @@ function Home() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="rounded-3xl p-6 flex-grow shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <div
-                    key={item}
-                    className="bg-zinc-800 rounded-3xl p-4 h-48 shadow-sm"
-                  >
-                    {/* Card content goes here */}
-                  </div>
-                ))}
+                {hasSubmitted &&
+                  models.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-3xl p-4 h-48 shadow-sm rounded-lg border bg-card text-card-foreground shadow-sm p-5 outline-none"
+                    >
+                      {/* Card content goes here */}
+                    </div>
+                  ))}
               </div>
-              <div className="h-64 md:h-96">{/* Main content area */}</div>
             </div>
 
             <div className="rounded-3xl p-6 w-full md:w-72 shadow-sm">
-              <h2 className="text-lg font-medium mb-4">Context reference</h2>
-              <div className="bg-zinc-800 rounded-3xl p-4 h-96 shadow-sm">
+              <div className="p-4 h-96 shadow-sm bg-card text-card-foreground shadow-sm p-5 outline-none border-l">
                 {/* Context reference content goes here */}
               </div>
             </div>
