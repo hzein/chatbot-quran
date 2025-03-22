@@ -2,11 +2,14 @@ import { SignedIn, SignedOut } from "@clerk/tanstack-start";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/multi-select";
 
 // Define a type for the model data structure
 interface Model {
-  id: string;
-  name: string;
+  value: string;
+  label: string;
 }
 
 export const Route = createFileRoute("/")({
@@ -15,27 +18,27 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const [query, setQuery] = useState("");
-  const [model, setModel] = useState<string[]>([]);
+  const [models, setModels] = useState<string[]>([]);
   const [availableModels, setAvailableModels] = useState<Model[]>([
     {
-      id: "google:gemini-2.0-pro-exp-02-05",
-      name: "google:gemini-2.0-pro-exp-02-05",
+      value: "google:gemini-2.0-pro-exp-02-05",
+      label: "google:gemini-2.0-pro-exp-02-05",
     },
     {
-      id: "google:gemini-2.0-flash-thinking-exp-01-21",
-      name: "google:gemini-2.0-flash-thinking-exp-01-21",
+      value: "google:gemini-2.0-flash-thinking-exp-01-21",
+      label: "google:gemini-2.0-flash-thinking-exp-01-21",
     },
     {
-      id: "groq:deepseek-r1-distill-llama-70b",
-      name: "groq:deepseek-r1-distill-llama-70b",
+      value: "groq:deepseek-r1-distill-llama-70b",
+      label: "groq:deepseek-r1-distill-llama-70b",
     },
     {
-      id: "groq:deepseek-r1-distill-qwen-32b",
-      name: "groq:deepseek-r1-distill-qwen-32b",
+      value: "groq:deepseek-r1-distill-qwen-32b",
+      label: "groq:deepseek-r1-distill-qwen-32b",
     },
     {
-      id: "groq:llama-3.3-70b-versatile",
-      name: "groq:llama-3.3-70b-versatile",
+      value: "groq:llama-3.3-70b-versatile",
+      label: "groq:llama-3.3-70b-versatile",
     },
   ]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,8 +58,8 @@ function Home() {
             modelName = modelName.slice(0, -5);
             modelName = `openrouter:${modelName}`;
             return {
-              id: modelName,
-              name: modelName,
+              value: modelName,
+              label: modelName,
             };
           });
 
@@ -78,50 +81,37 @@ function Home() {
           <div className="rounded-3xl p-2 mb-4 shadow-sm">
             <div className="flex flex-col md:flex-row justify-between gap-4">
               <div className="flex items-center gap-2">
-                <label htmlFor="query" className="text-lg font-medium">
-                  Query
-                </label>
-                <input
+                <Input
                   id="query"
                   type="text"
+                  placeholder="Enter your query"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="bg-zinc-800 border border-gray-300 rounded-md py-1 w-full md:w-64"
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5"
                 />
+                <Button
+                  variant="ghost"
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5"
+                >
+                  Submit
+                </Button>
               </div>
               <div className="flex items-center gap-2">
-                <label htmlFor="models" className="text-lg font-medium">
-                  Models
-                </label>
                 <div className="relative w-full md:w-64">
                   {isLoading ? (
                     <div className="bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full min-h-[80px] flex items-center justify-center">
                       Loading models...
                     </div>
                   ) : (
-                    <select
-                      id="models"
-                      multiple
-                      value={model}
-                      onChange={(e) => {
-                        const selectedOptions = Array.from(
-                          e.target.selectedOptions,
-                          (option) => option.value
-                        );
-                        setModel(selectedOptions);
-                      }}
-                      className="appearance-none bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full pr-10 min-h-[80px]"
-                    >
-                      {availableModels.map((model) => (
-                        <option key={model.id} value={model.id}>
-                          {model.name}
-                        </option>
-                      ))}
-                    </select>
+                    <MultiSelect
+                      options={availableModels}
+                      onValueChange={setModels}
+                      placeholder="Select models"
+                      variant="default"
+                      animation={2}
+                      maxCount={3}
+                    />
                   )}
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                    <ChevronDown className="h-4 w-4" />
-                  </div>
                 </div>
               </div>
             </div>

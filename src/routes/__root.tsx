@@ -15,11 +15,13 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
 import * as React from "react";
+import { Command as CommandPrimitive, useCommandState } from "cmdk";
+import { X } from "lucide-react";
 import { getAuth } from "@clerk/tanstack-start/server";
 import { getWebRequest } from "@tanstack/react-start/server";
-import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary.js";
-import { NotFound } from "~/components/NotFound.js";
-import appCss from "~/styles/app.css?url";
+import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
+import { NotFound } from "@/components/NotFound";
+import appCss from "@/styles/globals.css?url";
 
 const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
   const { userId } = await getAuth(getWebRequest()!);
@@ -117,10 +119,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <UserButton />
             </SignedIn>
             <SignedOut>
-              <SignInButton
-                className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-0.2 px-2 rounded-md shadow-sm"
-                mode="modal"
-              />
+              <SignInButton mode="modal" />
             </SignedOut>
           </div>
         </div>
