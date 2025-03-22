@@ -87,11 +87,11 @@ function Home() {
                   placeholder="Enter your query"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5"
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5 w-full md:w-[400px] lg:w-[500px] focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <Button
                   variant="ghost"
-                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5"
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
                 >
                   Submit
                 </Button>
@@ -110,6 +110,7 @@ function Home() {
                       variant="default"
                       animation={2}
                       maxCount={3}
+                      className="outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
                     />
                   )}
                 </div>
