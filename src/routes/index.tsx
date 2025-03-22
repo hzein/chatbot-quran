@@ -109,7 +109,8 @@ function Home() {
                       placeholder="Select models"
                       variant="default"
                       animation={2}
-                      maxCount={3}
+                      maxCount={2}
+                      maxSelections={6}
                       className="outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
                     />
                   )}

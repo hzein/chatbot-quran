@@ -100,6 +100,12 @@ interface MultiSelectProps
   maxCount?: number;
 
   /**
+   * Maximum number of items that can be selected.
+   * Optional, defaults to 6.
+   */
+  maxSelections?: number;
+
+  /**
    * The modality of the popover. When set to true, interaction with outside elements
    * will be disabled and only popover content will be visible to screen readers.
    * Optional, defaults to false.
@@ -132,6 +138,7 @@ export const MultiSelect = React.forwardRef<
       placeholder = "Select options",
       animation = 0,
       maxCount = 3,
+      maxSelections = 6,
       modalPopover = false,
       asChild = false,
       className,
@@ -158,11 +165,21 @@ export const MultiSelect = React.forwardRef<
     };
 
     const toggleOption = (option: string) => {
-      const newSelectedValues = selectedValues.includes(option)
-        ? selectedValues.filter((value) => value !== option)
-        : [...selectedValues, option];
-      setSelectedValues(newSelectedValues);
-      onValueChange(newSelectedValues);
+      // If option is already selected, allow removing it
+      if (selectedValues.includes(option)) {
+        const newSelectedValues = selectedValues.filter(
+          (value) => value !== option
+        );
+        setSelectedValues(newSelectedValues);
+        onValueChange(newSelectedValues);
+      } else {
+        // Only add if we haven't reached the maximum selections
+        if (selectedValues.length < maxSelections) {
+          const newSelectedValues = [...selectedValues, option];
+          setSelectedValues(newSelectedValues);
+          onValueChange(newSelectedValues);
+        }
+      }
     };
 
     const handleClear = () => {
@@ -180,16 +197,6 @@ export const MultiSelect = React.forwardRef<
       onValueChange(newSelectedValues);
     };
 
-    const toggleAll = () => {
-      if (selectedValues.length === options.length) {
-        handleClear();
-      } else {
-        const allValues = options.map((option) => option.value);
-        setSelectedValues(allValues);
-        onValueChange(allValues);
-      }
-    };
-
     return (
       <Popover
         open={isPopoverOpen}
@@ -202,7 +209,7 @@ export const MultiSelect = React.forwardRef<
             {...props}
             onClick={handleTogglePopover}
             className={cn(
-              "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
+              "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0",
               className
             )}
           >
@@ -281,42 +288,37 @@ export const MultiSelect = React.forwardRef<
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-0"
+          className="w-auto p-0 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
-          <Command>
+          <Command className="outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0">
             <CommandInput
               placeholder="Search..."
               onKeyDown={handleInputKeyDown}
+              className="outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0 border-none"
             />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
-                <CommandItem
-                  key="all"
-                  onSelect={toggleAll}
-                  className="cursor-pointer"
-                >
-                  <div
-                    className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                      selectedValues.length === options.length
-                        ? "bg-primary text-primary-foreground"
-                        : "opacity-50 [&_svg]:invisible"
-                    )}
-                  >
-                    <CheckIcon className="h-4 w-4" />
-                  </div>
-                  <span>(Select All)</span>
-                </CommandItem>
+                {/* Removed "Select All" option */}
+                {selectedValues.length >= maxSelections && (
+                  <CommandItem className="text-muted-foreground italic justify-center">
+                    Maximum {maxSelections} options selected
+                  </CommandItem>
+                )}
                 {options.map((option) => {
                   const isSelected = selectedValues.includes(option.value);
+                  const isDisabled =
+                    !isSelected && selectedValues.length >= maxSelections;
                   return (
                     <CommandItem
                       key={option.value}
-                      onSelect={() => toggleOption(option.value)}
-                      className="cursor-pointer"
+                      onSelect={() => !isDisabled && toggleOption(option.value)}
+                      className={cn(
+                        "cursor-pointer",
+                        isDisabled ? "opacity-50 cursor-not-allowed" : ""
+                      )}
                     >
                       <div
                         className={cn(
