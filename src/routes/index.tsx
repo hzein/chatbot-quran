@@ -79,7 +79,7 @@ function Home() {
             prevModels.map((model) => model.value)
           );
           const uniqueNewModels = freeModels.filter(
-            (model) => !existingValues.has(model.value)
+            (model: Model) => !existingValues.has(model.value)
           );
           return [...prevModels, ...uniqueNewModels];
         });
@@ -170,31 +170,31 @@ function Home() {
   };
 
   return (
-    <div className="p-2">
+    <div className="p-2 w-full">
       <SignedIn>
-        <div className="w-full max-w-6xl">
+        <div className="w-full">
           <div className="rounded-3xl p-2 mb-4 shadow-sm">
-            <div className="flex flex-col md:flex-row justify-around gap-8">
-              <div className="flex gap-2">
+            <div className="flex flex-col lg:flex-row justify-between gap-4 w-full">
+              <div className="flex gap-2 w-full lg:w-auto">
                 <Input
                   id="query"
                   type="text"
                   placeholder="Enter your query"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-5 w-full md:w-[400px] lg:w-[500px] focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 w-full max-w-[500px] focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <Button
                   variant="secondary"
-                  className="rounded-lg border bg-white text-black disabled:opacity-100 shadow-sm p-5 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                  className="rounded-lg border bg-white text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
                   onClick={handleSubmit}
                   disabled={isSubmitting || !query || models.length === 0}
                 >
                   {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
               </div>
-              <div className="flex gap-2">
-                <div className="relative w-full md:w-64">
+              <div className="flex gap-2 md:w-64">
+                <div className="relative w-full">
                   {isLoading ? (
                     <div className="bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full min-h-[80px] flex items-center justify-center">
                       Loading models...
@@ -213,7 +213,7 @@ function Home() {
                   )}
                 </div>
               </div>
-              <div className="rounded-3xl p-6 w-full md:w-72 shadow-sm">
+              <div className="rounded-3xl p-4 lg:w-72 shadow-sm">
                 <div className="h-96 bg-card text-card-foreground shadow-sm p-5 outline-none border-l">
                   {"Test"}
                 </div>
@@ -221,9 +221,9 @@ function Home() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="rounded-3xl p-6 flex-grow shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="w-full">
+            <div className="rounded-3xl p-4 shadow-sm w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
                 {hasSubmitted &&
                   modelResponses.map((response, index) => (
                     <div
