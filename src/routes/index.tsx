@@ -142,6 +142,7 @@ function Home() {
           newResponses[index] = {
             model,
             result: result.response,
+            source: result.source,
             status: result.status,
             loading: false,
           };
@@ -173,79 +174,87 @@ function Home() {
     <div className="p-2 w-full">
       <SignedIn>
         <div className="w-full">
-          <div className="rounded-3xl p-2 mb-4 shadow-sm">
-            <div className="flex flex-col lg:flex-row justify-between gap-4 w-full">
-              <div className="flex gap-2 w-full lg:w-auto">
-                <Input
-                  id="query"
-                  type="text"
-                  placeholder="Enter your query"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 w-full max-w-[500px] focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-                <Button
-                  variant="secondary"
-                  className="rounded-lg border bg-white text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || !query || models.length === 0}
-                >
-                  {isSubmitting ? "Submitting..." : "Submit"}
-                </Button>
-              </div>
-              <div className="flex gap-2 md:w-64">
-                <div className="relative w-full">
-                  {isLoading ? (
-                    <div className="bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full min-h-[80px] flex items-center justify-center">
-                      Loading models...
-                    </div>
-                  ) : (
-                    <MultiSelect
-                      options={availableModels}
-                      onValueChange={setModels}
-                      placeholder="Select models"
-                      variant="default"
-                      animation={2}
-                      maxCount={2}
-                      maxSelections={6}
-                      className="outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr,300px] gap-4">
+            <div className="flex flex-col space-y-4">
+              <div className="rounded-3xl p-4 shadow-sm">
+                <div className="flex flex-col space-y-4">
+                  <div className="flex gap-2 w-full">
+                    <Input
+                      id="query"
+                      type="text"
+                      placeholder="Enter your query"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 w-full focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
-                  )}
+                    <Button
+                      variant="secondary"
+                      className="rounded-lg border bg-white text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                      onClick={handleSubmit}
+                      disabled={isSubmitting || !query || models.length === 0}
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit"}
+                    </Button>
+                    <div className="w-full max-w-md">
+                      {isLoading ? (
+                        <div className="bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full min-h-[80px] flex items-center justify-center">
+                          Loading models...
+                        </div>
+                      ) : (
+                        <MultiSelect
+                          options={availableModels}
+                          onValueChange={setModels}
+                          placeholder="Select models"
+                          variant="default"
+                          animation={2}
+                          maxCount={2}
+                          maxSelections={6}
+                          className="outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="rounded-3xl p-4 lg:w-72 shadow-sm">
-                <div className="h-96 bg-card text-card-foreground shadow-sm p-5 outline-none border-l">
-                  {"Test"}
+
+              {/* Model responses appear directly below the inputs */}
+              <div className="rounded-3xl p-4 shadow-sm w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {hasSubmitted &&
+                    modelResponses.map((response, index) => (
+                      <div
+                        key={response.model}
+                        className="rounded-3xl h-auto min-h-48 border bg-card text-card-foreground shadow-sm p-5 outline-none overflow-auto"
+                      >
+                        <div className="flex flex-row">
+                          <h3 className="font-bold text-lg mb-2 border-b pb-2">
+                            {response.model}
+                          </h3>
+                          <p className="text-xs whitespace-pre-wrap">
+                            {response.source}
+                          </p>
+                        </div>
+                        {response.loading ? (
+                          <div className="animate-pulse h-32 bg-zinc-800/20 rounded"></div>
+                        ) : response.error ? (
+                          <div className="text-red-500 text-sm">
+                            {response.error}
+                          </div>
+                        ) : (
+                          <p className="text-sm whitespace-pre-wrap">
+                            {response.result}
+                          </p>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="w-full">
-            <div className="rounded-3xl p-4 shadow-sm w-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
-                {hasSubmitted &&
-                  modelResponses.map((response, index) => (
-                    <div
-                      key={response.model}
-                      className="rounded-3xl h-auto min-h-48 border bg-card text-card-foreground shadow-sm p-5 outline-none overflow-auto"
-                    >
-                      <h3 className="font-bold text-lg mb-2">
-                        {response.model}
-                      </h3>
-                      {response.loading ? (
-                        <div className="animate-pulse h-32 bg-zinc-800/20 rounded"></div>
-                      ) : response.error ? (
-                        <div className="text-red-500 text-sm">
-                          {response.error}
-                        </div>
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">
-                          {response.result}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+            {/* Right panel as a separate column */}
+            <div className="rounded-3xl p-4 shadow-sm h-96">
+              <div className="h-full bg-card text-card-foreground shadow-sm p-5 outline-none border-l">
+                {"Test"}
               </div>
             </div>
           </div>

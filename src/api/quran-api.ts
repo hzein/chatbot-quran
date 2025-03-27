@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getHeaders, getWebRequest } from "@tanstack/react-start/server";
 
 
 interface GenerateResponse {
@@ -12,7 +13,7 @@ type dataType = {
 }
 
 // Create a server function to handle the Quran API requests
-export const generateQuranResponse = createServerFn({ method: "GET" }).validator((data: dataType) => data).handler(async ({data}) => {
+export const generateQuranResponse = createServerFn({ method: "GET", response: "raw" }).validator((data: dataType) => data).handler(async ({data}) => {
 
   try {
     const model = data.model;
@@ -37,25 +38,36 @@ export const generateQuranResponse = createServerFn({ method: "GET" }).validator
         "X-API-Key": `${apiKey}`
       },
     });
-    
     if (!response.ok) {
       const errorText = await response.text().catch(() => "No error details available");
       throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     // Since you mentioned the response is text/plain, we'll use .text() instead of .json()
-    const responseText = await response.text();
-    console.log("Raw response text:", responseText);
+    // const responseText = await response.text();
+    const responseText = await response.json()
     
-    // Return the response in the expected format
-    return {
-      response: responseText,
+    // Return a proper Response object as required by the 'raw' response type
+    const responseData = {
+      response: responseText.content,
+      source: responseText.response_source,
       status: "success"
-    } as GenerateResponse;
+    };
+    
+    console.log(responseData)
+    return new Response(JSON.stringify(responseData), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   } catch (error) {
     console.error("Error calling Quran API:", error);
-    throw error instanceof Error
-      ? new Error(error.message)
-      : new Error("Unknown error occurred");
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    return new Response(JSON.stringify({ error: errorMessage, status: "error" }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }); 
