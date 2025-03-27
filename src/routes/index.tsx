@@ -17,7 +17,9 @@ interface ModelResponse {
   model: string;
   result: string;
   status: string;
+  context: string[];
   loading: boolean;
+  source?: string;
   error?: string;
 }
 
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [query, setQuery] = useState("");
   const [models, setModels] = useState<string[]>([]);
+  const [context, setContext] = useState<string[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [modelResponses, setModelResponses] = useState<ModelResponse[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,6 +108,7 @@ function Home() {
     const initialResponses = models.map((model) => ({
       model,
       result: "",
+      context: [],
       status: "pending",
       loading: true,
     }));
@@ -114,38 +118,25 @@ function Home() {
     // Process each model individually
     models.forEach(async (model, index) => {
       try {
-        // // Call our server function with FormData
-        // const endpoint = "/__server_fn/quran-api/generateQuranResponse";
-        // const formData = new FormData();
-        // formData.append("model", model);
-        // formData.append("query", query);
-
-        // const response = await fetch(endpoint, {
-        //   method: "POST",
-        //   body: formData,
-        // });
         const result = await generateQuranResponse({
           data: {
             model: model,
             query: query,
           },
         });
-        // if (!response.ok) {
-        //   throw new Error(`Server function failed: ${response.status}`);
-        // }
-        // console.log(`REPONSEEEE: ${response}`);
-        // const result = await response.json();
 
         // Update just this model's response in the state
         setModelResponses((prevResponses) => {
           const newResponses = [...prevResponses];
           newResponses[index] = {
             model,
-            result: result.response,
-            source: result.source,
-            status: result.status,
+            result: result.response || "",
+            source: result.source || "",
+            context: result.context || [],
+            status: result.status || "completed",
             loading: false,
           };
+          setContext(result.context || []);
           return newResponses;
         });
       } catch (error) {
@@ -157,6 +148,7 @@ function Home() {
           newResponses[index] = {
             model,
             result: "",
+            context: [],
             status: "error",
             loading: false,
             error: error instanceof Error ? error.message : "Unknown error",
@@ -219,20 +211,22 @@ function Home() {
 
               {/* Model responses appear directly below the inputs */}
               <div className="rounded-3xl p-4 shadow-sm w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="flex flex-col space-y-4">
                   {hasSubmitted &&
                     modelResponses.map((response, index) => (
                       <div
                         key={response.model}
-                        className="rounded-3xl h-auto min-h-48 border bg-card text-card-foreground shadow-sm p-5 outline-none overflow-auto"
+                        className="rounded-3xl w-full border bg-card text-card-foreground shadow-sm p-5 outline-none overflow-auto"
                       >
-                        <div className="flex flex-row">
-                          <h3 className="font-bold text-lg mb-2 border-b pb-2">
+                        <div className="flex flex-row justify-between mb-3 border-b pb-2">
+                          <h3 className="font-bold text-lg">
                             {response.model}
                           </h3>
-                          <p className="text-xs whitespace-pre-wrap">
-                            {response.source}
-                          </p>
+                          {response.source && (
+                            <p className="text-xs whitespace-pre-wrap">
+                              {response.source}
+                            </p>
+                          )}
                         </div>
                         {response.loading ? (
                           <div className="animate-pulse h-32 bg-zinc-800/20 rounded"></div>
@@ -252,9 +246,14 @@ function Home() {
             </div>
 
             {/* Right panel as a separate column */}
-            <div className="rounded-3xl p-4 shadow-sm h-96">
-              <div className="h-full bg-card text-card-foreground shadow-sm p-5 outline-none border-l">
-                {"Test"}
+            <div className="p-4 shadow-sm h-96 border-l">
+              <div className="h-full bg-card text-card-foreground shadow-sm p-5 outline-none">
+                {hasSubmitted &&
+                  context.map((response, index) => (
+                    <p className="text-sm whitespace-pre-wrap">
+                      {`${index + 1} - ${response}`}
+                    </p>
+                  ))}
               </div>
             </div>
           </div>

@@ -51,10 +51,10 @@ export const generateQuranResponse = createServerFn({ method: "GET", response: "
     const responseData = {
       response: responseText.content,
       source: responseText.response_source,
+      context: responseText.context,
       status: "success"
     };
     
-    console.log(responseData)
     return new Response(JSON.stringify(responseData), {
       headers: {
         'Content-Type': 'application/json'
