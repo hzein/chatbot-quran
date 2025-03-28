@@ -178,6 +178,8 @@ function Home() {
 
     // Set isSubmitting to false immediately after launching all requests
     setIsSubmitting(false);
+    // Reset the cache textarea
+    setCache("");
   };
 
   const handleSetCache = async () => {
@@ -243,6 +245,8 @@ function Home() {
       alert(`Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
+      // Reset the cache textarea
+      setCache("");
     }
   };
 
