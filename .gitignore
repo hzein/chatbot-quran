@@ -3,6 +3,7 @@ package-lock.json
 yarn.lock
 
 !.env
+.env
 .DS_Store
 .cache
 .vercel
