@@ -116,7 +116,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             />
           </svg>
           <span className="text-lg font-bold">
-            Chatbot Quran Playground - Experimentation
+            Quran Chatbot Playground - Experimental
           </span>
 
           <div className="ml-auto">
