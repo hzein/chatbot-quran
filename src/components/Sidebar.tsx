@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Textarea
               value={cache}
               onChange={(e) => setCache(e.target.value)}
-              placeholder="Enter content to cache (optional)"
+              placeholder="Enter content to cache"
               className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 w-full focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
             />
             <Button
