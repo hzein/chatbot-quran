@@ -218,21 +218,31 @@ export const MultiSelect = React.forwardRef<
                   {selectedValues.slice(0, maxCount).map((value) => {
                     const option = options.find((o) => o.value === value);
                     const IconComponent = option?.icon;
+                    // Define a max length for the label
+                    const maxLabelLength = 22;
+                    // Truncate label if it exceeds the max length
+                    const label =
+                      option?.label && option.label.length > maxLabelLength
+                        ? `${option.label.slice(0, maxLabelLength)}...`
+                        : option?.label;
+
                     return (
                       <Badge
                         key={value}
                         className={cn(
                           isAnimating ? "animate-bounce" : "",
-                          multiSelectVariants({ variant })
+                          multiSelectVariants({ variant }),
+                          "flex items-center max-w-52"
                         )}
                         style={{ animationDuration: `${animation}s` }}
                       >
                         {IconComponent && (
-                          <IconComponent className="h-4 w-4 mr-2" />
+                          <IconComponent className="h-4 w-4 mr-2 flex-shrink-0" />
                         )}
-                        {option?.label}
+                        {/* Display the potentially truncated label */}
+                        <span className="min-w-0">{label}</span>
                         <XCircle
-                          className="ml-2 h-4 w-4 cursor-pointer"
+                          className="ml-2 h-4 w-4 cursor-pointer flex-shrink-0"
                           onClick={(event) => {
                             event.stopPropagation();
                             toggleOption(value);
@@ -263,7 +273,7 @@ export const MultiSelect = React.forwardRef<
                 </div>
                 <div className="flex items-center justify-between">
                   <XIcon
-                    className="h-4 mx-2 cursor-pointer text-muted-foreground"
+                    className="h-4 mx-1 cursor-pointer text-muted-foreground"
                     onClick={(event) => {
                       event.stopPropagation();
                       handleClear();
@@ -273,12 +283,12 @@ export const MultiSelect = React.forwardRef<
                     orientation="vertical"
                     className="flex min-h-6 h-full"
                   />
-                  <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
+                  <ChevronDown className="h-4 mx-1 cursor-pointer text-muted-foreground" />
                 </div>
               </div>
             ) : (
               <div className="flex items-center justify-between w-full mx-auto">
-                <span className="text-sm text-muted-foreground mx-3">
+                <span className="text-sm text-muted-foreground mx-1 truncate min-w-0">
                   {placeholder}
                 </span>
                 <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />

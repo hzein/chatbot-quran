@@ -29,6 +29,13 @@ interface ModelResponse {
   error?: string;
 }
 
+// Define an interface for the expected cache response data
+interface CacheResponseData {
+  status: "success" | "error"; // Expecting a string status
+  doc_id?: string;
+  error?: string;
+}
+
 export const Route = createFileRoute("/")({
   component: Home,
 });
@@ -192,7 +199,7 @@ function Home() {
     try {
       if (source && source.toLowerCase().includes("cache")) {
         // Update the existing cache entry
-        const responseData = await updateCache({
+        const response = await updateCache({
           data: {
             query: query,
             content: cache,
@@ -200,6 +207,24 @@ function Home() {
           },
         });
 
+        // Check if response is ok before parsing JSON
+        if (!response.ok) {
+          // Try to get error message from response body, otherwise use status text
+          let errorMsg = `HTTP error! Status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMsg = errorData.error || JSON.stringify(errorData);
+          } catch (jsonError) {
+            // If JSON parsing fails, use the status text
+            errorMsg = response.statusText || errorMsg;
+          }
+          throw new Error(`Failed to update cache: ${errorMsg}`);
+        }
+
+        // Parse the JSON body from the response
+        const responseData: CacheResponseData = await response.json();
+
+        // Now check the status from the parsed data
         if (responseData.status === "success") {
           alert("Cache updated successfully");
         } else {
@@ -220,9 +245,23 @@ function Home() {
           },
         });
 
-        const responseData = await (response as Response).json();
+        // Check if response is ok before parsing JSON
+        if (!response.ok) {
+          let errorMsg = `HTTP error! Status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMsg = errorData.error || JSON.stringify(errorData);
+          } catch (jsonError) {
+            errorMsg = response.statusText || errorMsg;
+          }
+          throw new Error(`Failed to add to cache: ${errorMsg}`);
+        }
 
-        if (responseData.status === "success") {
+        const responseData: CacheResponseData = await (
+          response as Response
+        ).json();
+
+        if (responseData.status === "success" && responseData.doc_id) {
           setCacheDoc(responseData.doc_id);
           setSource(`cache-${responseData.doc_id}`);
           alert("Added to cache successfully");
@@ -262,14 +301,14 @@ function Home() {
   };
 
   return (
-    <div className="p-2 w-full">
+    <div className="w-full">
       <SignedIn>
         <div className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr,300px] gap-4">
-            <div className="flex flex-col space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr,300px]">
+            <div className="flex flex-col space-y-4 border-r border-white w-80">
               <div className="rounded-3xl p-4 shadow-sm">
                 <div className="flex flex-col space-y-4">
-                  <div className="flex gap-2 w-full">
+                  <div className="flex flex-col gap-2 w-full">
                     <Input
                       id="query"
                       type="text"
@@ -280,40 +319,45 @@ function Home() {
                     />
                     <Button
                       variant="secondary"
-                      className="rounded-lg border bg-yellow-500 text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                      className="rounded-lg border bg-yellow-500 text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0 w-full"
                       onClick={handleSubmit}
                       disabled={isSubmitting || !query || models.length === 0}
                     >
                       {isSubmitting ? "Submitting..." : "Submit"}
                     </Button>
-                    <div className="w-full max-w-md">
-                      {isLoading ? (
-                        <div className="bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full min-h-[80px] flex items-center justify-center">
-                          Loading models...
-                        </div>
-                      ) : (
-                        <MultiSelect
-                          options={availableModels}
-                          onValueChange={setModels}
-                          placeholder="Select models"
-                          variant="default"
-                          animation={2}
-                          maxCount={2}
-                          maxSelections={6}
-                          className="outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
-                        />
-                      )}
-                    </div>
+                  </div>
+
+                  <div className="w-full">
+                    {isLoading ? (
+                      <div className="bg-zinc-800 border border-gray-300 rounded-md px-3 py-1 w-full min-h-[80px] flex items-center justify-center">
+                        Loading models...
+                      </div>
+                    ) : (
+                      <MultiSelect
+                        options={availableModels}
+                        onValueChange={setModels}
+                        placeholder="Select models"
+                        variant="default"
+                        animation={2}
+                        maxCount={2}
+                        maxSelections={6}
+                        className="outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2 w-full">
                     <Textarea
                       value={cache}
                       onChange={(e) => setCache(e.target.value)}
+                      placeholder="Enter content to cache (optional)"
                       className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 w-full focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
                     />
                     <Button
                       variant="secondary"
-                      className="rounded-lg border bg-yellow-500 text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0"
+                      className="rounded-lg border bg-yellow-500 text-black disabled:opacity-100 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0 w-full"
                       onClick={handleSetCache}
-                      disabled={!hasSubmitted || isSubmitting}
+                      disabled={!cache || isSubmitting}
                     >
                       {source && source.toLowerCase().includes("cache")
                         ? "Update Cache"
@@ -322,15 +366,16 @@ function Home() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Model responses appear directly below the inputs */}
-              <div className="rounded-3xl p-4 shadow-sm w-full">
-                <div className="flex flex-col space-y-4">
-                  {hasSubmitted &&
-                    modelResponses.map((response, index) => (
+            <div className="flex flex-col space-y-4">
+              {hasSubmitted && modelResponses.length > 0 && (
+                <div className="rounded-3xl p-4 shadow-sm w-full">
+                  <div className="flex flex-col space-y-4">
+                    {modelResponses.map((response, index) => (
                       <div
                         key={response.model}
-                        className="rounded-3xl w-full border bg-card text-card-foreground shadow-sm p-5 outline-none overflow-auto"
+                        className="rounded-3xl w-full bg-[oklch(0.21_0.03_132.82)] text-card-foreground shadow-sm p-5 outline-none overflow-auto"
                       >
                         <div className="flex flex-row justify-between mb-3 border-b pb-2 text-yellow-500">
                           <h3 className="font-bold text-lg">
@@ -385,18 +430,23 @@ function Home() {
                         )}
                       </div>
                     ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Right panel as a separate column */}
-            <div className="p-4 shadow-sm h-96">
-              <div className="h-full bg-card text-card-foreground shadow-sm p-5 outline-none">
+            <div className="shadow-sm h-96">
+              <div className="h-full bg-card text-card-foreground shadow-sm outline-none">
+                {hasSubmitted && context.length > 0 && (
+                  <h4 className=" text-yellow-500 border-l text-lg font-semibold p-4 border-b">
+                    References:
+                  </h4>
+                )}
                 {hasSubmitted &&
                   context.map((response, index) => (
                     <div
                       key={index}
-                      className="text-sm whitespace-pre-wrap border-l pl-4 border-b pb-4 pt-4 text-yellow-500 flex justify-between items-start"
+                      className="text-sm whitespace-pre-wrap border-l pl-4 border-b pb-4 pt-4 flex justify-between items-start"
                     >
                       <p>{`${index + 1} - ${response}`}</p>
                       <button
