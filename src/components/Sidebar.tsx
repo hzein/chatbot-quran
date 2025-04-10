@@ -22,7 +22,9 @@ interface SidebarProps {
   isSubmitting: boolean;
   handleSubmit: () => void;
   handleSetCache: () => void;
-  source?: string; // Optional source to determine cache button text
+  handleDeleteCache: () => void;
+  source?: string;
+  cacheDoc?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -37,11 +39,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isSubmitting,
   handleSubmit,
   handleSetCache,
+  handleDeleteCache,
   source,
+  cacheDoc,
 }) => {
+  const showDeleteButton = source && source.toLowerCase().includes("cache");
+
   return (
-    <div className="flex flex-col space-y-4 border-r border-white w-80">
-      <div className="rounded-3xl p-4 shadow-sm">
+    <div className="flex flex-col space-y-4 w-80">
+      <div className="rounded-3xl pt-4 pl-4 pb-4 shadow-sm">
         <div className="flex flex-col space-y-4">
           {/* Query Input and Submit Button */}
           <div className="flex flex-col gap-2 w-full">
@@ -101,6 +107,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ? "Update Cache"
                 : "Set Cache"}
             </Button>
+            {showDeleteButton && (
+              <Button
+                variant="destructive"
+                className="rounded-lg border bg-red-600 text-white disabled:opacity-50 shadow-sm px-4 py-2 outline-none focus:outline-none focus:ring-0 focus:border-input focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 !ring-0 !ring-offset-0 w-full"
+                onClick={handleDeleteCache}
+                disabled={isSubmitting || !cacheDoc}
+              >
+                Delete Cache
+              </Button>
+            )}
           </div>
         </div>
       </div>

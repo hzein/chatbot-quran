@@ -6,6 +6,7 @@ import {
   generateQuranResponse,
   addToCache,
   updateCache,
+  deleteCache,
 } from "@/api/quran-api";
 import { Sidebar } from "@/components/Sidebar";
 import { ModelResponseCard } from "@/components/ModelResponseCard";
@@ -244,6 +245,38 @@ function Home() {
     }
   };
 
+  const handleDeleteCache = async () => {
+    if (!cacheDoc) {
+      alert("No cache document ID found to delete.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const responseData = await deleteCache({ data: { doc_id: cacheDoc } });
+
+      if (responseData.status === "success") {
+        alert("Cache deleted successfully");
+        setCache("");
+        setCacheDoc("");
+        setSource("");
+        setContext([]);
+        setModelResponses([]);
+      } else {
+        alert(
+          `Failed to delete cache: ${responseData.error || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting cache:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard
       .writeText(text)
@@ -259,7 +292,7 @@ function Home() {
     <div className="w-full">
       <SignedIn>
         <div className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr,300px]">
+          <div className="grid grid-cols-1 lg:grid-cols-[auto,1fr,300px] gap-4">
             <Sidebar
               query={query}
               setQuery={setQuery}
@@ -272,12 +305,14 @@ function Home() {
               isSubmitting={isSubmitting}
               handleSubmit={handleSubmit}
               handleSetCache={handleSetCache}
+              handleDeleteCache={handleDeleteCache}
               source={source}
+              cacheDoc={cacheDoc}
             />
 
             <div className="flex flex-col space-y-4">
               {hasSubmitted && modelResponses.length > 0 && (
-                <div className="rounded-3xl p-4 shadow-sm w-full">
+                <div className="rounded-3xl pt-4 pb-4 shadow-sm w-full">
                   <div className="flex flex-col space-y-4">
                     {modelResponses.map((response) => (
                       <ModelResponseCard

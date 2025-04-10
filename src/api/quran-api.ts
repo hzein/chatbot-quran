@@ -195,3 +195,62 @@ export const updateCache = createServerFn({ method: "POST", response: "raw" }).v
   }
 });
 
+// Type for deleteCache data
+type DeleteCacheData = {
+  doc_id: string
+}
+
+// Create a server function to delete content from cache
+export const deleteCache = createServerFn({ method: "POST", response: "raw" }).validator((data: DeleteCacheData) => data).handler(async ({data}) => {
+  try {
+    const { doc_id } = data;
+
+    if (!doc_id) {
+      throw new Error("Missing required field: doc_id");
+    }
+
+    // Access API key from environment variables
+    const apiKey = process.env.USER_API_KEY;
+    const apiUrl = process.env.FASTAPI_URL;
+
+    if (!apiKey) {
+      throw new Error("API key not found in environment variables");
+    }
+
+    // Make the API request
+    const response = await fetch(`${apiUrl}/deletecache?doc_id=${encodeURIComponent(doc_id)}`, {
+      method: "DELETE",
+      headers: {
+        "X-API-Key": `${apiKey}`,
+        "Content-Type": "application/json"
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "No error details available");
+      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    // Assuming the backend returns a success message upon successful deletion
+    await response.json(); 
+    
+    return new Response(JSON.stringify({
+      status: "success",
+      message: "Cache item deleted successfully"
+    }), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    console.error("Error deleting cache item:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    return new Response(JSON.stringify({ error: errorMessage, status: "error" }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+});
+
